@@ -4,7 +4,7 @@ const agriClimePayload = require("./payload");
 const axios = require("axios");
 const FormData = require("form-data");
 const path = require("path");
-const { get } = require("lodash");
+const { get, uniqueId } = require("lodash");
 
 const handle = (promise) => {
   return promise
@@ -30,6 +30,7 @@ const pgpEncrypt = async (payload) => {
     publicKeys: keys,
     armor: false,
   });
+  // console.log(keys[0].armor()); //print key in text.
   return data.message.packets.write();
 };
 
@@ -48,17 +49,17 @@ function bufferToStream(binary) {
 // all the commented code will be cleaned based on encryption findings.
 const callApi = async () => {
   const formData = new FormData();
-  // let fileContent = await pgpEncrypt(agriClimePayload);
-  // formData.append("file", Buffer.from(fileContent));
+  let fileContent = await pgpEncrypt(agriClimePayload);
+  formData.append("file", Buffer.from(fileContent));
 
-  // let fileContent = await pgpEncryptStream(agriClimePayload);
-  // formData.append("file", fileContent);
-
+  // creating the stream and sending it as formdata (fs.createReadstream (line#78) is retruning stream and it is working)
   // let fileContent = await pgpEncrypt(agriClimePayload);
   // let stream = bufferToStream(Buffer.from(fileContent));
   // formData.append("file", stream);
 
+  // mimicing the file post
   // let uniqueId = Math.floor(Math.random() * 9000000000) + 1000000000;
+  // console.log(`Newly generated fileName: ${uniqueId}.txt.gpg`);
   // let filename = path.join(__dirname, `output-files/${uniqueId}.txt.gpg`);
   // let fileContent = await pgpEncrypt(agriClimePayload);
   // fs.writeFileSync(filename, fileContent);
