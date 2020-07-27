@@ -15,6 +15,7 @@
     "axios": "^0.19.2",
     "form-data": "^3.0.0",
     "lodash": "^4.17.19",
+    "node-gyp": "^7.0.0",
     "openpgp": "^4.10.7"
   },
   "devDependencies": {

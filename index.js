@@ -5,7 +5,6 @@ const axios = require("axios");
 const FormData = require("form-data");
 const path = require("path");
 const { get, uniqueId } = require("lodash");
-
 const handle = (promise) => {
   return promise
     .then((data) => [data, undefined])
@@ -22,16 +21,24 @@ var JsonToArray = function (json) {
   return ret;
 };
 
+const getKey = async () => {
+  var encryptedKey = await fs.readFileSync("public-key.gpg");
+  const keys = (await openpgp.key.read(encryptedKey)).keys;
+  return keys[0].armor();
+};
+
 const pgpEncrypt = async (payload) => {
   var encryptedKey = await fs.readFileSync("public-key.gpg");
   const keys = (await openpgp.key.read(encryptedKey)).keys;
-  const data = await openpgp.encrypt({
+  const { data: encrypted } = await openpgp.encrypt({
     message: openpgp.message.fromText(JSON.stringify(payload, null, 0)),
     publicKeys: keys,
-    armor: false,
+    // armor: false,
   });
-  // console.log(keys[0].armor()); //print key in text.
-  return data.message.packets.write();
+  console.log(keys[0].armor()); //print key in text.
+  // return data.message.packets.write();
+  // console.log(encrypted);
+  return encrypted;
 };
 
 //will be removed based on encryption findings
@@ -49,8 +56,8 @@ function bufferToStream(binary) {
 // all the commented code will be cleaned based on encryption findings.
 const callApi = async () => {
   const formData = new FormData();
-  let fileContent = await pgpEncrypt(agriClimePayload);
-  formData.append("file", Buffer.from(fileContent));
+  // let fileContent = await pgpEncrypt(agriClimePayload);
+  // formData.append("file", fileContent);
 
   // creating the stream and sending it as formdata (fs.createReadstream (line#78) is retruning stream and it is working)
   // let fileContent = await pgpEncrypt(agriClimePayload);
@@ -88,7 +95,8 @@ const callApi = async () => {
   );
   if (error) {
     console.error("error while posting the data to agriclime api");
-    throw get(error, "response.data", "response data is null");
+    // throw get(error, "response.data", "response data is null");
+    return null;
   }
   return response.data;
 };
